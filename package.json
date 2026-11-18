@@ -1,6 +1,6 @@
 {
   "name": "@grec0/mcp-svn",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "MCP server for full Subversion (SVN) integration",
   "license": "MIT",
   "author": "@grec0",
