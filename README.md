@@ -448,12 +448,14 @@ npm run inspector
 
 # Tests
 npm test
-
-# Publish a new version
-npm run release:patch
-npm run release:minor
-npm run release:major
 ```
+
+### Releasing
+
+- Patch versions are incremented automatically by CI on pushes to `main`.
+- Run `npm run release:minor` for a minor release.
+- Run `npm run release:major` for a major release.
+- Packages are published to npm exclusively by CI.
 
 ### Project structure
 

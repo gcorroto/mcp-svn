@@ -47,11 +47,9 @@
     "version:patch": "npm version patch --no-git-tag-version",
     "version:minor": "npm version minor --no-git-tag-version",
     "version:major": "npm version major --no-git-tag-version",
-    "prerelease": "npm run build && npm test",
-    "release:patch": "npm run version:patch && npm run prerelease && npm publish",
-    "release:minor": "npm run version:minor && npm run prerelease && npm publish",
-    "release:major": "npm run version:major && npm run prerelease && npm publish",
-    "postpublish": "git add package.json && git commit -m \"chore: bump version to v$(node -p \"require('./package.json').version\")\" && git push"
+    "release:minor": "npm run version:minor && git commit -am \"chore(release): v$(node -p \"require('./package.json').version\")\" && git push",
+    "release:major": "npm run version:major && git commit -am \"chore(release): v$(node -p \"require('./package.json').version\")\" && git push",
+    "check": "npm run build && npm test"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.6.1",
