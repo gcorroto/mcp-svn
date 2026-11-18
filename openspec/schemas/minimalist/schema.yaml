@@ -1,0 +1,38 @@
+name: minimalist
+version: 1
+description: Lightweight schema for well-scoped, low-risk changes — specs and tasks only
+artifacts:
+  - id: specs
+    generates: specs/**/*.md
+    description: Specifications authored as user stories with Given/When/Then acceptance criteria
+    template: specs/spec.md
+    instruction: |
+      Write the specification as user stories under specs/<capability>/spec.md, one
+      folder per capability (add more only when the change spans clearly separate
+      capabilities). The capability folder is MANDATORY and its name is load-bearing:
+      it is the ONLY place tooling can read which canonical spec
+      (openspec/specs/<capability>/spec.md) these requirements belong to. Use a
+      kebab-case capability name (e.g. specs/tray-notifications/spec.md).
+      For each capability:
+      - A `## Requirement: <capability name>` heading.
+      - One line in the form: As a <actor>, I want <capability>, so that <benefit>.
+      - One or more `#### Scenario: <name>` blocks with Given/When/Then acceptance
+        criteria. Every scenario must be independently testable.
+      Do NOT write a proposal or a design document — this schema intentionally has
+      neither. Capture WHAT the system must do; skip HOW and WHY.
+    requires: []
+  - id: tasks
+    generates: tasks.md
+    description: Implementation checklist with trackable tasks
+    template: tasks.md
+    instruction: |
+      Derive an ordered implementation checklist from the specs. Group tasks under
+      `## <numbered section>` headings. Every task is a markdown checkbox line
+      (`- [ ] <task>`) that is small, verifiable, and references the requirement or
+      scenario it implements. Include tasks for tests that cover every scenario.
+    requires:
+      - specs
+apply:
+  requires:
+    - tasks
+  tracks: tasks.md

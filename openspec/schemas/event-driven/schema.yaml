@@ -1,0 +1,107 @@
+name: event-driven
+version: 1
+description: Event-first workflow — storm the domain, model the flows, then specify, design, contract (AsyncAPI 3.0) and plan
+artifacts:
+  - id: event-storming
+    generates: event-storming.md
+    description: Domain discovery — events, commands, actors, policies and bounded contexts
+    template: event-storming.md
+    instruction: |
+      Run a written event-storming session for this change. Produce:
+      - `## Domain Events` — past-tense facts (e.g. OrderPlaced), one line of meaning each.
+      - `## Commands` — the intents that cause each event, with the actor who issues them.
+      - `## Actors & Systems` — humans and external systems involved.
+      - `## Policies / Reactions` — "whenever <event> then <command>" automation rules.
+      - `## Bounded Contexts` — group the events/commands into contexts and name the
+        context boundaries the change touches.
+      - `## Hotspots` — open questions, ambiguities and risks discovered while storming.
+      Ground every event in the issue description and the existing codebase. Do not
+      invent flows the change does not need.
+    requires: []
+  - id: event-modeling
+    generates: event-modeling.md
+    description: Structured end-to-end flows (Mermaid) built from the stormed events
+    template: event-modeling.md
+    instruction: |
+      Turn the stormed events into concrete flows. For each user-visible flow produce
+      a `## Flow: <name>` section containing:
+      - A short narrative of trigger -> command -> event(s) -> read-model/notification.
+      - A Mermaid sequence or flow diagram in a fenced mermaid block showing
+        actors, commands, events and projections in temporal order.
+      - The data each event carries (field list with types).
+      Cover the happy path and every failure path the storming hotspots exposed.
+      Stay consistent with event-storming.md — same event names, same contexts.
+    requires:
+      - event-storming
+  - id: specs
+    generates: specs/**/*.md
+    description: Specifications as user stories with Given/When/Then acceptance criteria derived from the modeled flows
+    template: specs/spec.md
+    instruction: |
+      Write the behavioural specification under specs/<capability>/spec.md, derived
+      from the flows in event-modeling.md. The capability folder is MANDATORY and its
+      name is load-bearing: it is the ONLY place the archive step can read which
+      canonical spec (openspec/specs/<capability>/spec.md) these requirements belong
+      to. A flat specs/spec.md gives it no destination, so it silently renames the
+      change folder and the canonical spec is never created. Use a kebab-case
+      capability name derived from the bounded context the flows live in
+      (e.g. specs/order-checkout/spec.md), and add one folder per capability when the
+      change spans clearly separate capabilities.
+      For each capability:
+      - A `## Requirement: <capability name>` heading.
+      - One line in the form: As a <actor>, I want <capability>, so that <benefit>.
+      - One or more `#### Scenario: <name>` blocks with Given/When/Then acceptance
+        criteria. Scenarios must reference the domain events by name
+        (e.g. "Then the OrderPlaced event is published").
+      Every flow in event-modeling.md must be covered by at least one scenario.
+    requires:
+      - event-modeling
+  - id: design
+    generates: design.md
+    description: Technical design — how the modeled events map onto the codebase
+    template: design.md
+    instruction: |
+      Describe HOW the system implements the modeled flows:
+      - `## Context` — current state of the affected modules.
+      - `## Decisions` — key technical decisions with alternatives considered.
+      - `## Event Flow Implementation` — where each command handler, event producer,
+        consumer and projection lives (real file paths / modules of this repo).
+      - `## Data & Migrations` — schema or storage changes.
+      - `## Risks & Mitigations`.
+      Stay consistent with event-modeling.md; do not introduce events that were not
+      modeled.
+    requires:
+      - specs
+  - id: asyncapi
+    generates: asyncapi.yaml
+    description: AsyncAPI 3.0 contract for every channel/message in the modeled flows
+    template: asyncapi.yaml
+    instruction: |
+      Author a valid AsyncAPI 3.0 document (asyncapi: 3.0.0) covering every event in
+      event-modeling.md:
+      - `channels` — one per event stream/topic with a meaningful address.
+      - `operations` — send/receive operations bound to their channels.
+      - `components.messages` — one message per domain event, payload defined with a
+        JSON Schema that matches the field list in event-modeling.md exactly.
+      - Reuse existing channel naming conventions if the repo already has AsyncAPI or
+        messaging code; otherwise use <context>.<event-name> kebab-case addresses.
+      Output MUST be raw YAML (no markdown fences, no prose) so tooling can consume it.
+    requires:
+      - design
+  - id: tasks
+    generates: tasks.md
+    description: Implementation checklist with trackable tasks
+    template: tasks.md
+    instruction: |
+      Derive an ordered implementation checklist covering the design and the AsyncAPI
+      contract. Group tasks under `## <numbered section>` headings; every task is a
+      `- [ ]` checkbox line that is small and verifiable. Include tasks for: event
+      producers, consumers, projections, the AsyncAPI-declared payload shapes, tests
+      for every scenario, and wiring/config. Reference spec scenarios where relevant.
+    requires:
+      - design
+      - asyncapi
+apply:
+  requires:
+    - tasks
+  tracks: tasks.md
