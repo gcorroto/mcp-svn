@@ -310,7 +310,7 @@ export class SvnService {
       };
 
     } catch (error: any) {
-      throw new SvnError(`Failed to get SVN diff: ${error.message}`);
+      throw new SvnError(`Failed to get SVN diff: ${error.message}${error.stderr ? `\n${error.stderr}` : ''}`);
     }
   }
 
@@ -365,7 +365,7 @@ export class SvnService {
       };
 
     } catch (error: any) {
-      throw new SvnError(`Failed to checkout: ${error.message}`);
+      throw new SvnError(`Failed to checkout: ${error.message}${error.stderr ? `\n${error.stderr}` : ''}`);
     }
   }
 
@@ -413,7 +413,7 @@ export class SvnService {
       };
 
     } catch (error: any) {
-      throw new SvnError(`Failed to update: ${error.message}`);
+      throw new SvnError(`Failed to update: ${error.message}${error.stderr ? `\n${error.stderr}` : ''}`);
     }
   }
 
@@ -470,7 +470,7 @@ export class SvnService {
       };
 
     } catch (error: any) {
-      throw new SvnError(`Failed to add files: ${error.message}`);
+      throw new SvnError(`Failed to add files: ${error.message}${error.stderr ? `\n${error.stderr}` : ''}`);
     }
   }
 
@@ -488,14 +488,13 @@ export class SvnService {
 
       const args = ['commit'];
       
-      if (options.message) {
-        args.push('--message', options.message);
-      }
-      
+      // svn rejects --message together with --file, and the tool schema always requires a message
       if (options.file) {
         args.push('--file', normalizePath(options.file));
+      } else if (options.message) {
+        args.push('--message', options.message);
       }
-      
+
       if (options.force) {
         args.push('--force');
       }
@@ -531,7 +530,7 @@ export class SvnService {
       };
 
     } catch (error: any) {
-      throw new SvnError(`Failed to commit: ${error.message}`);
+      throw new SvnError(`Failed to commit: ${error.message}${error.stderr ? `\n${error.stderr}` : ''}`);
     }
   }
 
@@ -580,7 +579,7 @@ export class SvnService {
       };
 
     } catch (error: any) {
-      throw new SvnError(`Failed to delete files: ${error.message}`);
+      throw new SvnError(`Failed to delete files: ${error.message}${error.stderr ? `\n${error.stderr}` : ''}`);
     }
   }
 
@@ -614,7 +613,7 @@ export class SvnService {
       };
 
     } catch (error: any) {
-      throw new SvnError(`Failed to revert files: ${error.message}`);
+      throw new SvnError(`Failed to revert files: ${error.message}${error.stderr ? `\n${error.stderr}` : ''}`);
     }
   }
 
@@ -643,7 +642,7 @@ export class SvnService {
       };
 
     } catch (error: any) {
-      throw new SvnError(`Failed to cleanup: ${error.message}`);
+      throw new SvnError(`Failed to cleanup: ${error.message}${error.stderr ? `\n${error.stderr}` : ''}`);
     }
   }
 
