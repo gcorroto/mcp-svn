@@ -1,5 +1,5 @@
 name: event-driven
-version: 1
+version: 2
 description: Event-first workflow — storm the domain, model the flows, then specify, design, contract (AsyncAPI 3.0) and plan
 artifacts:
   - id: event-storming
@@ -35,25 +35,68 @@ artifacts:
       - event-storming
   - id: specs
     generates: specs/**/*.md
-    description: Specifications as user stories with Given/When/Then acceptance criteria derived from the modeled flows
+    description: Delta specs as user stories with Given/When/Then acceptance criteria derived from the modeled flows
     template: specs/spec.md
     instruction: |
-      Write the behavioural specification under specs/<capability>/spec.md, derived
-      from the flows in event-modeling.md. The capability folder is MANDATORY and its
-      name is load-bearing: it is the ONLY place the archive step can read which
-      canonical spec (openspec/specs/<capability>/spec.md) these requirements belong
-      to. A flat specs/spec.md gives it no destination, so it silently renames the
-      change folder and the canonical spec is never created. Use a kebab-case
-      capability name derived from the bounded context the flows live in
-      (e.g. specs/order-checkout/spec.md), and add one folder per capability when the
+      Write the behavioural specification as OpenSpec delta specs under
+      specs/<capability>/spec.md, derived from the flows in event-modeling.md. Name
+      each capability after the bounded context its flows live in (for example,
+      specs/order-checkout/spec.md), and add one folder per capability when the
       change spans clearly separate capabilities.
-      For each capability:
-      - A `## Requirement: <capability name>` heading.
-      - One line in the form: As a <actor>, I want <capability>, so that <benefit>.
-      - One or more `#### Scenario: <name>` blocks with Given/When/Then acceptance
-        criteria. Scenarios must reference the domain events by name
-        (e.g. "Then the OrderPlaced event is published").
+      The capability folder is MANDATORY and its name is load-bearing: archive merges
+      the file into the canonical openspec/specs/<capability>/spec.md named by that
+      folder. OpenSpec 2.x rejects a flat specs/spec.md outright (1.6.0 archived it
+      without updating any canonical spec).
+      - New capabilities: a kebab-case name for a durable system behavior (for
+        example, specs/tray-notifications/spec.md), not the work in this change.
+      - Modified capabilities: run `openspec list --specs` and use the exact existing
+        folder name from openspec/specs/<capability>/. Do not invent a near-duplicate.
+
+      Each requirement is a user story with Gherkin acceptance criteria: after
+      `### Requirement: <name>` write one normative sentence (The system SHALL ...),
+      then one line in the form: As a <actor>, I want <capability>, so that <benefit>.
+      Then one or more `#### Scenario: <name>` blocks with GIVEN/WHEN/THEN bullets.
+      Scenarios must reference the domain events by name
+      (e.g. "- **THEN** the OrderPlaced event is published").
       Every flow in event-modeling.md must be covered by at least one scenario.
+
+      Delta operations (use ## headers, only the ones that apply):
+      - **ADDED Requirements**: New capabilities
+      - **MODIFIED Requirements**: Changed behavior - MUST include full updated content
+      - **REMOVED Requirements**: Deprecated features - MUST include **Reason** and **Migration**
+      - **RENAMED Requirements**: Name changes only - use FROM:/TO: format
+
+      Format requirements:
+      - Each requirement: `### Requirement: <name>` followed by description
+      - Use SHALL/MUST for normative requirements (avoid should/may)
+      - Each scenario: `#### Scenario: <name>` with WHEN/THEN format
+      - **CRITICAL**: Scenarios MUST use exactly 4 hashtags (`####`). Using 3 hashtags or bullets will fail silently.
+      - Every requirement MUST have at least one scenario.
+      - Every scenario MUST have a WHEN/GIVEN step (its trigger) and a THEN step (its outcome), as bullets: `- **GIVEN** ...`, `- **WHEN** ...`, `- **THEN** ...`.
+      - Keep each requirement's description (the text between `### Requirement:` and its first scenario) to 500 characters or fewer; move examples and edge cases into scenarios.
+
+      New capabilities only: the delta spec's first section is `## Purpose` -
+      one or two sentences (50+ characters) describing what the capability is for.
+      Archive copies it into the main spec it creates. Do NOT add `## Purpose` to a
+      delta for an existing capability - that spec already has one.
+
+      MODIFIED requirements workflow:
+      1. Locate the existing requirement in openspec/specs/<capability>/spec.md
+      2. Copy the ENTIRE requirement block (from `### Requirement:` through all scenarios)
+      3. Paste under `## MODIFIED Requirements` and edit to reflect new behavior
+      4. Ensure header text matches exactly (whitespace-insensitive)
+
+      Common pitfall: Using MODIFIED with partial content loses detail at archive time.
+      If adding new concerns without changing existing behavior, use ADDED instead.
+
+      REMOVED: `### Requirement: <exact existing name>` followed by a
+      `**Reason**: ...` line and a `**Migration**: ...` line.
+      RENAMED: one pair per rename, the FROM line immediately followed by its TO line:
+      - FROM: `### Requirement: <old name>`
+      - TO: `### Requirement: <new name>`
+
+      Before finishing, run `openspec validate <change-name>` and fix every ERROR it
+      reports: `openspec archive` aborts on a delta it cannot apply.
     requires:
       - event-modeling
   - id: design
