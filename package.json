@@ -1,6 +1,6 @@
 {
   "name": "@grec0/mcp-svn",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "MCP server for full Subversion (SVN) integration",
   "license": "MIT",
   "author": "@grec0",
@@ -35,7 +35,7 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20"
   },
   "scripts": {
     "build": "tsc && shx chmod +x dist/*.js",
@@ -52,11 +52,10 @@
     "check": "npm run build && npm test"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.6.1",
     "@types/node": "^22",
     "iconv-lite": "^0.7.0",
-    "zod": "^3.22.4",
-    "zod-to-json-schema": "^3.23.5"
+    "zod": "^4.2.0",
+    "@modelcontextprotocol/server": "^2.4.0"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
@@ -65,6 +64,7 @@
     "jschardet": "^3.1.4",
     "shx": "^0.3.4",
     "ts-jest": "^29.2.6",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.2",
+    "@modelcontextprotocol/client": "^2.4.0"
   }
 }
