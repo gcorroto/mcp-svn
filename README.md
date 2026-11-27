@@ -14,7 +14,7 @@ A complete MCP (Model Context Protocol) server for Subversion (SVN) integration,
 
 ## 📋 Requirements
 
-- **Node.js** >= 18.0.0
+- **Node.js** >= 20
 - **Subversion (SVN)** installed and available on PATH
 - **TypeScript** (for development)
 
